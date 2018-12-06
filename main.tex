@@ -1,0 +1,172 @@
+\documentclass[letterpaper,12pt]{article}
+
+%% Language and font encodings
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\include{formats}
+%% Sets page size and margins
+%\usepackage[top=1in,bottom=1in,left=1in,right=1in,marginparwidth=1.75cm]{geometry}
+
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{setspace}
+\onehalfspacing
+%\usepackage[colorinlistoftodos]{todonotes}
+%\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+
+\title{\includegraphics[height=1in]{cornell.png}
+	\includegraphics[height=1in]{sloan.png}
+	\includegraphics[height=1in]{nsf.png}
+	\\
+	Proceedings from the\\Synthetic LBD International Seminar}
+\author{Lars Vilhuber \and Saki Kinney \and Ian M. Schmutte \thanks{Funding for the workshop was provided by the National Science Foundation \citepalias[Grants][]{nsf1012593,nsf1131848} and the Alfred P. Sloan Foundation \citepalias{sloan2015}. Organizational support was provided by the Labor Dynamics Institute at Cornell University. }}
+\iftoggle{final}{
+	\date{\today}
+}{
+	\date{August 30, 2017 - DRAFT - DO NOT DISTRIBUTE}
+}
+
+\begin{document}
+\input{acrodefs}
+\maketitle
+
+\begin{abstract}
+On May 9, 2017, we hosted a seminar to discuss the conditions necessary to implement the SynLBD approach with interested parties, with the goal of providing  a straightforward toolkit to implement the same procedure on other data. The proceedings summarize the discussions during the workshop.
+\end{abstract}
+
+\newpage
+\section{Introduction}
+Since 2010, the US Census Bureau's Synthetic LBD \citep{KinneyEtAl2011} has been made available to researchers through Cornell University’s \ac{SDS}. The main purpose of the Synthetic LBD is to facilitate researcher access to establishment microdata in a way that preserves the confidentiality of the underlying entities' data. The main purpose of the \ac{SDS} is to allow  researcher access to happen, and to enable a feedback loop that leverages research use to inform and improve future releases of the Synthetic LBD, including through improvements of its methodology.
+
+Establishment and firm microdata pose many challenges to the application of disclosure avoidance techniques and thus to public distribution, as they are sparse and often unique. It is easy to concoct examples of firms and establishments that are so dominant in their industry or location that they would be immediately identified if their data were publicly released. This is true for many countries. Consequently, it is not uncommon that access to establishment microdata, if granted at all, is provided through data enclaves (Research Data Centers), at headquarters of statistical agencies, or some other limited means. These restrictions on data access reduce the growth of knowledge by increasing the cost to researchers of accessing the data.
+
+Synthetic data are created by replacing sensitive values with repeated draws from a model fit to the original data \citep{Little1993,Rubin1993}, in an approach that is closely related to multiple imputation. By making disclosable synthetic microdata available through a remotely accessible data server, combined with a validation server, the SynLBD approach alleviates some of the access restrictions associated with economic data. The approach is mutually beneficial to both agency and researchers. Researchers can access public use servers at little or no cost within a few weeks of their initial application and can later validate their model-based inferences on the full confidential microdata. The statistical agency  has an interest in improving future versions of the synthetic data to be more accurate and reliable. They can do so by leveraging the diversity of the researchers' models and analyzing discrepancies. The \ac{SDS} at Cornell University provides the infrastructure to implement this approach for two different synthetic datasets, with funding from the \ac{NSF} and the Alfred P. Sloan Foundation.
+
+On May 9, 2017, we hosted a seminar to discuss the conditions necessary to implement the SynLBD approach with interested parties, with the goal of providing other statistical agencies, both in the US and abroad, a straightforward toolkit to implement the same procedure on their own data. Our hope is that by implementing similar procedures on comparable business microdata, new research both within and across countries can be enabled. The long-term goal is a series of country-specific datasets on establishments and/or firms available within the same computing environment.  The seminar brought together academics working on cutting-edge methods for the protection of privacy in statistical databases, along with researchers at statistical agencies who have started or are interested in developing synthetic business microdata. Five sessions touched on the full life cycle of the SynLBD development and implementation. In each session, we first discussed existing implementations and experiences, and then, as a group, discussed issues as they pertain to the broader community. Participants from several US agencies, Canada, and Germany were present. We discussed the data and software requirements for the lowest-cost approach, the disclosure protection statistics already implemented that can be used to achieve release of the data in this  way, the validation procedures that an agency should agree to, and the likely cost of maintaining such procedures. The discussion was conducted following the Chatham House Rule\footnote{\url{https://www.chathamhouse.org/about/chatham-house-rule}}.
+
+\section{History and Overview of SynLBD}
+The US LBD was created in the early 2000s \citep{MirandaJarmin2002}, following previous research files with more restrictive coverage. At its core, it is a research database containing longitudinally linked data records from a statistical business register of establishments. Breaks of longitudinal links are resolved using probabilistic name and address matching. The variables currently in the LBD are industry, annual payroll, employment, geography, birth year, death year, and firm structure. Though it has very few variables on the database itself, it serves as a backbone for many linkages into establishment and firm surveys and censuses at the US Census Bureau.\footnote{An alternate database is the Business Information Tracking Series (BITS). There are efforts underway to bring LBD and BITS closer together. }
+
+The LBD provides coverage of the entire economy and is used to study economic activities such as business dynamics and job flows. The fundamental structure of the LBD (and thus the SynLBD) is a longitudinal file on  economic entities, where each entity has a start and end date and a small number of key attributes that evolve over time. Hypothetically, this structure is shared by many other longitudinal panels, such as panels of jobs or of residences. We should note that it does not apply to data structures like a linked employer-employee database, since there are no linkages between entities at a point in time. Thus, using concepts from graph theory, it is a mapping of a network that contains only nodes, and no edges. These structural characteristics are relevant for any attempt to generalize the synthesizing methodology to other contexts, such as matched employer-employee data \citep[but see][]{Barrientos2017}.
+
+The primary goal of the SynLBD project is to create partially synthetic microdata on establishments for public release, allowing researchers easier access for the implementation of a wide (unconstrained) range of models with analytically valid inferences about the underlying population, while protecting against re-identification of any given unit or its attributes. There are multiple reasons why a public release of such data is desirable. The US LBD is one of most requested datasets in the \acp{FSRDC}, but access through the FSRDCs is still subject to long approval processes. In many European countries, access to data on business registers is arduous or impossible for researchers. Access through commercial providers is possible (Bureau Van Dijk), but coverage is generally poor.
+
+The US SynLBD was released in 2010 to the Cornell \ac{SDS} (see Section~\ref{sec:validation}). The Census Bureau’s \ac{DRB}, as well as the \ac{IRS},  classified SynLBD as public-use, but access is controlled due to concerns about the quality of the data. There are no disclosure concerns but researchers are cautioned not to trust results as if they were created by a traditional public-use file without going through the validation process. For similar reasons, the preparation of tabular data based on the synthetic data is strongly discouraged, and are not validated. Nevertheless, the synthetic data are of much easier access than the confidential data.
+
+\section{Synthesizing methodology}
+We briefly describe the synthesizing methodology here, a more detailed description is provided elsewhere \citep{KinneyEtAl2011,Kinney_et_al_2011_Appendix}. Currently, two versions of the process are in use. For the US, the “Phase 2” version is currently in its final stages \citep{RePEc:cen:wpaper:14-12}. In Germany, work is underway implementing the earlier “Phase 1” version \citep{RePEc:cen:wpaper:14-13}.
+
+The general approach to data synthesis is to generate a joint posterior predictive distribution of $Y|X$ where $Y$ are variables to be synthesized and $X$ are unsynthesized (and potentially unreleased) variables. Variables are synthesized in a sequential fashion, based on the representation of the joint distribution as a product of conditional distributions. Generically, categorical variables (birth and death years, multi-unit status) are processed first,  using a variant of  Dirichlet-Multinomial.  It was mentioned that the German data does not identify  multiunit status, however, the relevant step in the process can be used to process arbitrary meaningful indicator variables.  Known disadvantages to this approach are the fact that one cannot use continuous predictors (this has not been an issue for the SynLBD), and that there is some subjectivity involved in dropping predictor variables when the synthetic $X$ do not exist in the observed data. The current ordering, as outlined in \citet{KinneyEtAl2011}, was determined based on experimentation, and should carry over to similar data. 
+
+After categorical variables, continuous variables are synthesized. It is often difficult to achieve good analytical fit with variables such as employment and payroll, since these variables are highly skewed. In the SynLBD, these variables are imputed year by year, and within each year, first employment and then payroll. Phase 1 used a normal linear regression model with kernel density-based  transformation of the response \citep{woodcock2009distribution}. Phase 2 shifted to a CART model with Bayesian bootstrap.
+
+The key unsynthesized but released variable is industry. Industry code was chosen for conditioning and release because it is considered public information. The U.S. Census Bureau considers both location and industry (activity) of an establishment as public knowledge about an establishment, though other attributes of the establishment thus identified are considered confidential. All synthesizing occurs within industry groups (though some collapsing of industry codes is done for efficiency reasons). It was also noted that Phase 1 of the SynLBD processing used \ac{SIC},\footnote{Note that the LBD-based statistics called \ac{BDS} are still only published by \ac{SIC}.} whereas Phase 2 development was done using \ac{NAICS}-based industry coding. This distinction is important since the distributions of multi-unit and single unit firms and establishments may look very different under different coding systems.  
+
+%\mc{LARS}{Not sure what to make of this paragraph - doesn't really fit}
+%\md{SAKI}{The first line is redundant with previous paragraph and the rest is either redundant or could be combined with second paragraph of Introduction}
+%Location and industry are not considered private information in the US. The primary reason for using synthetic data is due to confidentiality concerns. Since distributions of business data are thinner than person data, there is a perception that LBD is more disclosive than a cross-sectional person sample. That is, the LBD contains thin distributions with long tails making privacy a big concern. Swapping was not an option because it would allow actual values to be released.
+
+
+Job creation and destruction are biased in the Phase 1 approach \citep{KinneyEtAl2011,RePEc:cen:wpaper:14-13}. It is a feature of the economic activity of most establishments that most employment levels do not change at all  from year to year. The Phase 1 model for employment, using a \ac{KDE} transform combined with a linear regression approach, predicted too many changes, both positive and negative, at each point in time, resulting in biased estimates of job creation and destruction even though the net job flows were unbiased. The transition in Phase 2 to a \ac{CART} approach  helped fix this issue.
+
+In general, tails of the employment and payroll distributions are relatively well preserved, though this turned out to be a disclosure concern in Phase 2. The CART synthesis approach tended to preserve extreme outliers excessively well, so that it was necessary to add an additional disclosure avoidance measure (in this case, multiplicative noise, prior to imputation). Another option to counter this issue, being currently considered, is the use of  quantile regression.
+
+While only one implicate has been released for SynLBD, multiple implicates are created. Even in Phase 2, there is not a lot of between-implicate variability for aggregate estimates. If multiple implicates were to be released, between-implicate variability could be increased by adding a bootstrap step to the CART synthesis as a proxy for parameter draws. 
+
+%\mc{Saki}{Between implicate variability can be increased by adding bootstrap step (proxy for drawing parameters) but it is not an issue at the record level}
+
+\subsection{Additional features}
+The group discussed additional options and features that are either being developed as part of Phase 2, or are of interest in alternate applications. Some relate to the structure and attributes of the synthetic data, others to attributes of the underlying population. For instance, one participant noted the absence of non-employers. This is a feature of the underlying confidential data -- the LBD only covers an employer universe, a feature of many such registers -- and would require some thought if it were to be expanded to non-employers, as the economic behavior of the self-employed differs substantially from that of even the smallest employers. 
+
+Phase 1 modeling did not account for firm structure, other than through an categorical variable summarizing multi-unit status over an establishment's lifetime. To properly account for this is a non-trivial extension of the original model.  Phase 2 includes modeling of the firm structure \citep{RePEc:cen:wpaper:14-12}. 
+\mc{LOST}{ We know how establishments are linked together through firm and now establishment can switch firm identifier over time so you can capture mergers and acquisitions.}
+
+\subsection{Lessons learned}
+Some comments were made on lessons learned over the course of model  development. Modeling did not start by addressing everything at once, but leveraged the sequential structure to start with a few variables, and build up,  obtaining feedback along the way. A participant noted, however, that it is helpful if the the order in which variables are synthesized can be specified early on.  
+\mc{LV}{SAKI should look at this section. It doesn't completely make sense.}
+Changing the order of predictors later on creates some computational burden since the code is highly customized to the LBD. For example, the "Inactive status" indicators were the last set of variables to be added to the SynLBD synthesis; however, it made sense to synthesize it before multiunit, payroll, employment, and firm ID, since none of these are synthesized for inactive establishments. Consequently, the synthesis code for these variables needed to be updated to account for the new variable.
+
+One of the participants noted that, within the overall process, the collaboration between subject matter experts (here, economists) and statisticians was found to be  immensely valuable. The statisticians refined data building processes to  highlight key business features identified by economists. 
+%This refinement process leads to improved modeling of feature driven by economic activity.
+
+
+\section{SynLBD Inputs}
+The group subsequently turned their attention to the process of defining and preparing the input data that is to be synthesized. In creating a synthetic database like SynLBD, one must consider the nature of the inputs. A discussion in the group centered around whether the data input should be unmodified (``raw''), preserving idiosyncracies in the data,  or whether the data should be cleaned. The current approach, both for U.S. and German data, uses  cleaned data as input to the synthesizing process. Implausible observations are edited, and missing data are imputed.  The process explicitly precludes imputing missing data patterns. One reason for imputing missing values prior to synthesis is so that the completed data can be used to validate the synthesis process itself. Another alternative is to synthesize missingness.  Imputing missing values simultaneously with synthesis is also possible but would complicate validation of researcher code.
+
+Data cleaning simplifies the synthesizing process but there is some value lost as a consequence. Cleaned research data is an externality of the data synthesizing  process. However, one must take care not to overdo the cleaning. The intent is to restrict the modifications to the minimum necessary, as one would for the actual analytical use of the data.  For example, establishments may become ``inactive'' at certain times. This is a feature of economic activity that one would not wish the model to remove. Similarly, while some outliers might truly be aberrant, others are again intrinsic to the data generating process. The right amount of data preparation will depend on the particular context, and users will need to strike an appropriate balance between data cleaning and complexifying the data synthesis models.
+
+A question arose regarding what information about cleaning is shared with the users. In the U.S. context, users in the \ac{FSRDC} are already provided with suggested data cleaning code. In fact, the LBD itself is the product of data cleaning, with published general procedures \citep{MirandaJarmin2002}, though some parameters are not public knowledge.  Cleaning German data is still under way,  but the authors plan to document and publish the process, and make the cleaned data available in the German \ac{IAB}  \acp{RDC}. Given that different researchers faced with raw data will make different decisions regarding data cleaning, another question was asked about the possibility of creating multiple versions of SynLBD using various versions of cleaned input. The discussion noted that  there might be privacy issues associated with that process, as releasing multiple versions of the same input data will inevitably create better inferences about the confidential data.%
+\footnote{\cite{synthpop2016} propose a toolkit to generate custom synthetic data, by extension multiple independent synthetic data releases from the same input data, using different models.}. It was noted that users who would like to investigate different methods of cleaning data can always request access to the confidential data through the \ac{FSRDC} system. 
+
+
+%Cross country considerations for different cleaning methods.
+
+
+Other issues related to data input and cleaning concern measurement of key concepts, such as employment, and classifications that change over time. For instance, in Germany, coverage of the underlying administrative data has expanded over time, so that ``employment'' includes part-time workers in later years that were out of scope in an earlier period. All countries face the regular updating of their industry classification systems - in the U.S., the \ac{SIC} gave way to \ac{NAICS}, which itself has evolved over time. German industry coding has gone through similar changes. Even though currently geography is not among the released variables, U.S. county changes over time would need to be taken into account. These changes lead to  both conceptual and empirical challenges in preparing a time-consistent longitudinal database, and need to be adressed prior to synthesizing. The release of an updated U.S. SynLBD has been delayed in part in order to address the transition to NAICS. The work in Germany on developing an intertemporal industry classification crosswalk for the confidential data is of independent value, and is expected to be released to IAB \ac{RDC} users soon.
+
+
+
+
+%Germany and Brazilian data allow for observing employee flows. A lot of establishment births come from multi-unit firms.
+
+
+\section{Confidentiality protection}
+Confidentiality protection is, of course, the core purpose. The group discussed measures of how protective the data are, and how effective the approach might be in other legal and institutional contexts.
+
+For the  U.S. SynLBD, attribute disclosure was of greater concern than identity disclosures \citep{KinneyEtAl2011}. The underlying universe data in the LBD are basically the same as those in the County Business Patterns (CBP) program, and the Census Bureau does not consider the existence of an establishment to be confidential. Nevertheless, re-identification based on attributes was a potential concern. The key protection comes from the fact that any observable characteristics used for re-identification are themselves synthetic. 
+Preventing re-identification based on birth and death dates was the key criterion during the development of SynLBD. An establishment's birth and death years are synthesized such that with high probability they differ from the  actual birth and death dates for a given establishment \citep[Table 2]{KinneyEtAl2011}. Attribute disclosure (about payroll and employment) was the other key concern. \cite[Figure 13]{KinneyEtAl2011} showed that observed and synthesized employment differed in almost every year for establishments. These two outcomes are inherent to the synthesizing methodology, and should be transferable to other attributes as well. It was noted that the high protectiveness of Phase 1 data in terms of employment came at the cost of some lower analytic validity. Preliminary Phase 2 results based on the use of the CART model \citep{RePEc:cen:wpaper:14-12} led to too strong correlation between synthesized and actual payroll by this criterion in the upper tails of the distribution, and necessitated the addition of other protection mechanisms, as noted earlier. 
+
+Although the U.S. SynLBD has only released a single implicate, it is in principle feasible to release multiple implicates. The specific establishment ID is randomly generated, and thus each implicate has the same weak correlation in attributes between each other as they do with the confidential data, providing another source of protection, should a data provider choose to release additional implicates.
+
+
+%Phase 2 aims to demonstrate confidentiality protection against linkage attacks and allow for safely including multiple implicates,geography, and firm implicates.
+%How the released SynLBD will be updated with new data remains an open question. It may be useful to accumulate models researchers want to run against data to improve quality in next version.
+
+For the U.S. Census Bureau, the criteria and metrics used for data releases such as the SynLBD are determined by the  Census Bureau's \ac{DRB}, in conjunction with the \ac{IRS}. The group discussed various other confidentiality criteria in use by other agencies, such as Statistics Canada and the U.S. \ac{IRS}, and how the SynLBD might conform to these. 
+
+The current Canadian criteria to assess confidentiality are governed by systems designed to evaluate output. For example, tools at Statistics Canada for tabulations might indicate if it satisfies rules like industry dominance. It seemed unclear what criterion might be used for a synthetic database such as the SynLBD. Any deviation from the current state of affairs would be contingent upon convincing policymakers of the validity of new protection measures.
+
+In Germany, a distinction is made between public use data, scientific use data, and confidential data. Scientific use files require that recipients of the data sign agreements and provide some security for the data, though not at the level of a \ac{RDC}. In turn, their disclosure avoidance requirements are based on the concept of ``de facto anonymization'' - the effort  necessary to achieve reidentification is deemed to be higher  than the ``benefit'' an attacker might receive from the reidentification or attribute disclosure. There is some experience with the release of partially synthetic data as scientific-use data \citep{doi:10.1080/02664763.2011.584523}. Disclosure avoidance criteria there were based on the risk of reidentification (taking into account underlying sampling uncertainty). The type of  release (public-use or scientific use) of a more comprehensive longitudinal German SynLBD still remains to be assessed. The criteria for release are reviewed by lawyers at the level of the supervising government department (in the case of the \ac{IAB}, the \textit{Bundesarbeitsministerium}). 
+%© 2011 Synthetic Datasets for Statistical Disclosure Control Theory and Implementation Authors: Drechsler, Jörg
+%The requirements for protecting data are loose for scientific community. US methods must pass disclosure review board. Public perception is less of a concern. There is however lots of evidence to show policymakers that the cell suppression method provides weak protection compare to new methods such as differential privacy.
+
+It was noted that the \ac{IRS} might have interest in releasing longitudinal files, such as of tax filings. Participants with prior experience with the \ac{IRS} noted that the criteria that have been used in the past have relied on the Euclidean distance between tax data sets, ensuring that they are not ``too close''. It should be noted that the release of the SynLBD required not only Census Bureau \ac{DRB} approval, but also \ac{IRS} approval, so in principle, that agency has experience with the criteria used for the SynLBD.
+
+
+The question arose regarding how often to re-release synthetic data. For one, the linkage process used to construct the confidential data may use all available data to identify the most likely link, and as new years of data become available, the ``best'' link may change over time. On the other hand, providing additional  years of data creates confidentiality issues. One of the fundamental confidentiality protection measures is the deviation of the synthetic birth year from the actual birth year. In the original release, the range of possible values is the entire year range, providing strong protection. However, this breaks down if adding only a single year, as it reveals the exact year of an establishment's birth or death, and is thus not recommended\mc{SAKI}{I don't think this is necessarily true across the board but you would be limited in assigning birth and death years corresponding to the appended year to establishments alive at that time}
+. Releases of additional data would need to rely on a full new synthesis (and the weak cross-implicate correlation). 
+
+The group also discussed whether a reframing risk in a differential privacy framework might help in this regard, but came to no conclusion. It should be noted that \cite{KinneyEtAl2011} provided an ex-post measure of differential privacy. 
+
+
+\section{Validation}
+\label{sec:validation}
+
+
+From the start, users of the synthetic data were warned that, as a preliminary (beta) product, inferences might not always be valid. A mechanism was thus put in place to allow users of both the SynLBD and the \ac{SSB} a means to obtain valid inferences, while at the same time contributing to improvements of the synthetic data generating process. This mechanism -- called validation, had multiple components. At the end of the process, the Census Bureau would take researcher-provided programming code, run it against the confidential data, apply classical disclosure avoidance mechanisms to the model output, and provide the protected model output to the researcher. The rules applied, both in terms of documentation and disclosure avoidance checks, are the same as for \ac{FSRDC}-based research. 
+
+Because of limited resources, researchers were required to provide code that ran error-free on the synthetic data, and to ensure that the transferability of the code was as smooth as possible, researchers were provided access to a remote computing environment modeled on that of the Census Bureau. This server, called the \acf{SDS}, was funded by \ac{NSF} and subsequently the Alfred P. Sloan Foundation and hosted by Cornell University \citep{AbowdVilhuber::SOLE::2016}.\mc{SAKI}{Isn't this described in the Introduction?}Users access the server remotely, but cannot remove data from the system. They are free to use the model output from the synthetic data, but are not allowed to create custom tabulations. Since the synthetic data are structured the same way the confidential data is (the database schema are the same), users can create the required documentation for validation requests quite easily: it is a verbose and technical description of the table created from the synthetic data, plus auxiliary documentation, such as dominance criteria and cell size counts. 
+
+For the Cornell \ac{SDS}, about 10\% of data access requests lead to validation requests.  \citet{AbowdVilhuber::SOLE::2016} describe preliminary results from several years of availability, a forthcoming document from the same authors will provide more complete results.
+
+Thus, validation has two components: a front-end coding environment (essentially a type of integrated development environment that facilitates testing for compliance with validation requirements), and a back-end validation system which runs programs against confidential data. The validation mechanism is not real-time, but has quite short median turnaround times. The current mechanism is mostly manual - users interactively develop their programs on the \ac{SDS}, and validation occurs by the same research staff that also develop the algorithms. Support on neither end is a full-time job, but is also not trivial. Improvements can occur along multiple lines. Regular user training helps users get acquainted with the (for them, unusual) system. This has been successfully done for the \ac{SSB}, leading to user-organized conferences \citep{carr:assa:2016,rutledge:assa:2016,sheppard:assa:2016,wickslim:assa:2016} and accelerated turn-around time. Self-paced training can also help, reducing the learning curve for most users. On the back-end, automated submission and output checking mechanisms, possibly re-using systems already in place at statistical agencies, could further reduce turn-around time. The back-end system has strong similarities with remote-submission systems (Statistics Canada's Real Time Remote Access system\footnote{\url{http://www.statcan.gc.ca/eng/rtra/rtra}} or the Luxemburg Income Study's LISSY system\footnote{\url{http://www.lisdatacenter.org/data-access/}}). Additional improvements such as the use of verification servers \citep{Barrientos2017} can further reduce the burden without (much) additional disclosure risk. 
+\mc{LV}{STOPPED HERE}
+
+\section{Next steps}
+One of the purposes of the workshop was to report on existing efforts to apply the U.S. SynLBD codebase to other data, whether other countries' longitudinal business data, or other data entirely. Multiple times over the course of the workshop, the question arose concerning the expandability of the overall mechanism, in particular the ability to add additional variables. Multiple (potential) users of the U.S. SynLBD have requested variables such as revenue, capital stock, or profits, and as noted earlier, geographic indicators. Because the basic mechanism relies on sequential conditional imputation, it is in principle feasible to either add additional variables at the end of the current process, or insert the creation of new variables into the process at a judiciously selected location. In general, experience suggests processing categorical variables before continuous variables. 
+In Canada and Germany, efforts are currently underway to apply the existing programs to national data to create a country-specific SynLBD. In the United States, efforts are underway to explore the feasibility of a synthetic panel file for tax returns. 
+
+%Note was made of progress in creating differentially-private synthetic data, which offer better privacy guarantees and more flexible products.
+
+Workshop participants expressed an interest in working groups and updates regarding the project, and a Github project will contain code and instructions for interested parties to leverage the existing codebase, tentatively at \url{https://github.com/labordynamicsinstitute/isynlbd}. 
+
+\section{Acknowledgements}
+The organizers and the authors of these proceedings wish to express their thanks to all  participants of the workshop. While many people contributed to the summary, all remaining errors and omissions are ours. We also wish to thank the National Academies' Committee on National Statistics for hosting the seminar in their Keck Center. We thank William Sexton (Cornell University) for excellent note taking, but all remaining errors are ours. This workshop could not have occurred without the pioneering work of Jerry Reiter, Arnie Reznek, Javier Miranda, Ron Jarmin, and John Abowd, without whose contributions the production and release of the original U.S. SynLBD would not have taken place.
+
+\bibliographystyle{\mybibstyle}
+\bibliography{abbrev,paper,sds-bib/synlbd-data,sds-bib/synlbd-documents,sds-bib/wsc2013,sds-bib/wsc2015,sds-bib/grants,sds-bib/assa2016}
+
+\end{document}

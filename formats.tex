@@ -1,0 +1,84 @@
+%-------------------- Packages --------------------
+\usepackage[inline]{enumitem}
+\setlist[enumerate,1]{label=(\alph*)}
+\usepackage[printonlyused]{acronym}   % defines acronyms
+\input{acrodefs}
+
+\usepackage[sort&compress]{natbib} % for bibliography
+%--------------- if using numbers this will need to be activated:
+%--------------- this replaces any use of author-year mode into numbered mode.
+%\setcitestyle{squares}
+%\setcitestyle{authoryear}
+%-----------------------------
+% This is needed if using numbered style
+%\let\oldcitet\citet
+%\let\citet=\citep
+
+% this defines a few aliases for grants
+\defcitealias{nsf0427889}{0427889}
+\defcitealias{nsf0922005}{0922005}
+\defcitealias{nsf1042181}{1042181}
+\defcitealias{nsf0941226}{0941226}
+\defcitealias{sloan2015}{G-2015-13903}
+\defcitealias{nsf0339191}{0339191}
+\defcitealias{nsf1012593}{1012593}
+\defcitealias{nsf1131848}{1131848}
+
+\newcommand{\mybibstyle}{apalike}
+                       %define bibliography to use
+\usepackage{geometry}
+%\usepackage{fullpage}  % enlarged margins
+ % rename bibliography
+ %\renewcommand*{\refname}{\vspace*{-1em}}
+ \renewcommand{\bibname}{References cited}
+ \renewcommand{\contentsname}{Table of Contents}
+
+ \usepackage{hyperref}
+
+ \hypersetup{%
+ %backref=true,%
+ naturalnames=true,%
+ bookmarksnumbered=true,%
+ bookmarksopen=false,%
+ plainpages=true,%
+ colorlinks=true,%
+ urlcolor=black,
+ linkcolor=black,%
+ filecolor=black,%
+ citecolor=black,%
+ %pagecolor=myblue,%
+ %pdftitle={\mytitle},%
+ pdfpagemode=UseOutlines%
+ %pdfauthor={\myauthors},%
+ %pdfsubject={\myshorttitle}
+ }
+
+
+\newcommand{\myhref}[2]{#2\footnote{\url{#1}}}
+
+\usepackage{comment}
+\usepackage{etoolbox}
+%%%%%%% The "final" flag toggles the final version of the proposal. When set
+%%%%%%% to true, all comments are hidden, the page is set to the correct size,
+%%%%%%% and any `fix' information is drawn normally.
+\newtoggle{final}
+\toggletrue{final}
+%\togglefalse{final}
+%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%% Set margins %%%%%%%%%%%%%%%%
+\iftoggle{final}{%
+  \geometry{letterpaper,ignoreheadfoot,left=1.0in,right=1.0in,top=1.0in,bottom=1.0in} %rgb
+}{%
+  \geometry{letterpaper,ignoreheadfoot,left=1.0in,right=2.0in,top=1.0in,bottom=1.0in,footskip=0.25in,headsep=0.125in,marginparwidth=1.75in,paperwidth=9.5in} 
+}
+%%%%%%%%%%%%%%%%
+% enable todo package for margin notes, missing figs, and such
+\iftoggle{final}{
+	\usepackage[disable]{todonotes}
+}{
+  \usepackage[textsize=scriptsize]{todonotes}
+}
+% todo-enabled version: \margincomment{}{} command to put comments about text into the margin.
+\newcommand{\mc}[2]{% % 1=initials, 2=comment
+\todo[size=\scriptsize,linecolor=blue!90]{\textbf{\uppercase{#1}:}~#2}
+}
